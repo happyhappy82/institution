@@ -5,6 +5,21 @@ import readingTime from 'reading-time';
 
 const policiesDirectory = path.join(process.cwd(), 'content/policies');
 
+function extractExcerpt(content: string, maxLength: number = 150): string {
+  const lines = content.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // 헤더, 빈 줄, 이미지, 리스트 제외
+    if (trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('!') && !trimmed.startsWith('-') && !trimmed.startsWith('*')) {
+      if (trimmed.length > maxLength) {
+        return trimmed.slice(0, maxLength) + '...';
+      }
+      return trimmed;
+    }
+  }
+  return '';
+}
+
 export interface Policy {
   slug: string;
   title: string;
@@ -35,7 +50,7 @@ export function getSortedPropertiesData(): Policy[] {
         slug,
         title: data.title || '',
         date: data.date || '',
-        excerpt: data.excerpt || '',
+        excerpt: data.excerpt || extractExcerpt(content),
         content,
         lightColor: data.lightColor || 'lab(62.926 59.277 -1.573)',
         darkColor: data.darkColor || 'lab(80.993 32.329 -7.093)',
@@ -67,7 +82,7 @@ export function getPolicyBySlug(slug: string): Policy | null {
     slug,
     title: data.title || '',
     date: data.date || '',
-    excerpt: data.excerpt || '',
+    excerpt: data.excerpt || extractExcerpt(content),
     content,
     lightColor: data.lightColor || 'lab(62.926 59.277 -1.573)',
     darkColor: data.darkColor || 'lab(80.993 32.329 -7.093)',
