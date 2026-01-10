@@ -104,6 +104,8 @@ export default async function PolicyPage({ params }: Props) {
           </div>
         </div>
 
+        <TableOfContents />
+
         <div className="prose prose-lg max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -125,7 +127,6 @@ export default async function PolicyPage({ params }: Props) {
         </div>
 
         <QnA items={qnaItems} />
-        <TableOfContents />
       </article>
     </>
   );

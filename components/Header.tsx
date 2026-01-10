@@ -6,7 +6,7 @@ export default function Header() {
           href="/"
           className="inline-block"
         >
-          <h1 className="text-3xl font-black text-blue-600">정책정보Lab</h1>
+          <h1 className="text-3xl font-black text-blue-600">정부지원금 알리미</h1>
         </a>
       </div>
     </header>

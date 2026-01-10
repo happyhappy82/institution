@@ -8,25 +8,25 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "정책정보Lab",
-  description: "정부 지원금, 정책, 제도 정보를 제공하는 사이트 및 투자 가이드를 제공하는 사이트입니다.",
+  title: "정부지원금 알리미",
+  description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
   metadataBase: new URL("https://policyinfolab.xyz"),
-  keywords: ["정부 지원금", "아파트 리뷰", "오피스텔 추천", "부동산 투자", "매물 정보"],
-  authors: [{ name: "PolicyInfoLab" }],
-  creator: "PolicyInfoLab",
-  publisher: "PolicyInfoLab",
+  keywords: ["정부 지원금", "정책자금", "보조금", "장려금", "지원금 혜택"],
+  authors: [{ name: "정부지원금 알리미" }],
+  creator: "정부지원금 알리미",
+  publisher: "정부지원금 알리미",
   openGraph: {
-    title: "정책정보Lab",
-    description: "정부 지원금, 정책, 제도 정보를 제공하는 사이트 및 투자 가이드를 제공하는 사이트입니다.",
+    title: "정부지원금 알리미",
+    description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
     type: "website",
     locale: "ko_KR",
     url: "https://policyinfolab.xyz",
-    siteName: "정책정보Lab",
+    siteName: "정부지원금 알리미",
   },
   twitter: {
     card: "summary_large_image",
-    title: "정책정보Lab",
-    description: "정부 지원금, 정책, 제도 정보를 제공하는 사이트 및 투자 가이드를 제공하는 사이트입니다.",
+    title: "정부지원금 알리미",
+    description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
   },
   robots: {
     index: true,
@@ -49,10 +49,10 @@ export default function RootLayout({
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "정책정보Lab",
-    "alternateName": "PolicyInfoLab",
+    "name": "정부지원금 알리미",
+    "alternateName": "정부지원금 알리미",
     "url": "https://policyinfolab.xyz",
-    "description": "정부 지원금, 정책, 제도 정보를 제공하는 사이트 및 투자 가이드를 제공하는 사이트입니다.",
+    "description": "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
   };
 
   return (
