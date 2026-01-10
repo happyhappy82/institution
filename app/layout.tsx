@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   creator: "정부지원금 알리미",
   publisher: "정부지원금 알리미",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
   openGraph: {
     title: "정부지원금 알리미",
