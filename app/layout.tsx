@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   authors: [{ name: "정부지원금 알리미" }],
   creator: "정부지원금 알리미",
   publisher: "정부지원금 알리미",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "정부지원금 알리미",
     description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
@@ -22,11 +26,20 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: "https://policyinfolab.xyz",
     siteName: "정부지원금 알리미",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 1200,
+        alt: "정부지원금 알리미",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "정부지원금 알리미",
     description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
