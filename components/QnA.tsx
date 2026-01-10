@@ -18,7 +18,7 @@ export default function QnA({ items }: QnAProps) {
 
   return (
     <div className="mt-12 border-t pt-8">
-      <h2 className="text-2xl font-bold mb-6">자주 묻는 질문</h2>
+      <h2 id="자주-묻는-질문" className="text-2xl font-bold mb-6">자주 묻는 질문</h2>
       <div className="space-y-4">
         {items.map((item, index) => (
           <div key={index} className="border rounded-lg">
