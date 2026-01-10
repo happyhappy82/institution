@@ -85,49 +85,55 @@ export default async function PolicyPage({ params }: Props) {
   return (
     <>
       <Header />
-      <article className="relative">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(propertySchema) }}
-        />
+      <div className="lg:flex lg:gap-8">
+        {/* Main Content */}
+        <article className="lg:flex-1 lg:max-w-2xl">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(propertySchema) }}
+          />
 
-        <div className="mb-8">
-          <h1
-            className="text-[42px] font-black leading-tight mb-4"
-            style={{ color: property.lightColor }}
-          >
-            {property.title}
-          </h1>
-          <div className="flex gap-4 text-sm text-gray-600">
-            <time dateTime={property.date}>{property.date}</time>
-            <span>{property.readingTime}</span>
+          <div className="mb-8">
+            <h1
+              className="text-[42px] font-black leading-tight mb-4"
+              style={{ color: property.lightColor }}
+            >
+              {property.title}
+            </h1>
+            <div className="flex gap-4 text-sm text-gray-600">
+              <time dateTime={property.date}>{property.date}</time>
+              <span>{property.readingTime}</span>
+            </div>
           </div>
-        </div>
 
-        <TableOfContents />
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h2: ({ node, ...props }) => {
+                  const text = props.children?.toString() || "";
+                  const id = text.toLowerCase().replace(/\s+/g, "-");
+                  return <h2 id={id} {...props} />;
+                },
+                h3: ({ node, ...props }) => {
+                  const text = props.children?.toString() || "";
+                  const id = text.toLowerCase().replace(/\s+/g, "-");
+                  return <h3 id={id} {...props} />;
+                },
+              }}
+            >
+              {contentWithoutQnA}
+            </ReactMarkdown>
+          </div>
 
-        <div className="prose prose-lg max-w-none">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              h2: ({ node, ...props }) => {
-                const text = props.children?.toString() || "";
-                const id = text.toLowerCase().replace(/\s+/g, "-");
-                return <h2 id={id} {...props} />;
-              },
-              h3: ({ node, ...props }) => {
-                const text = props.children?.toString() || "";
-                const id = text.toLowerCase().replace(/\s+/g, "-");
-                return <h3 id={id} {...props} />;
-              },
-            }}
-          >
-            {contentWithoutQnA}
-          </ReactMarkdown>
-        </div>
+          <QnA items={qnaItems} />
+        </article>
 
-        <QnA items={qnaItems} />
-      </article>
+        {/* Sidebar TOC */}
+        <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
+          <TableOfContents />
+        </aside>
+      </div>
     </>
   );
 }

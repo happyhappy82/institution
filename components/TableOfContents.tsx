@@ -10,7 +10,7 @@ interface TocItem {
 
 export default function TableOfContents() {
   const [toc, setToc] = useState<TocItem[]>([]);
-  const [isOpen, setIsOpen] = useState(true);
+  const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
     const headings = document.querySelectorAll("article h2, article h3");
@@ -29,41 +29,52 @@ export default function TableOfContents() {
     setToc(items);
   }, []);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-80px 0px -80% 0px" }
+    );
+
+    const headings = document.querySelectorAll("article h2, article h3");
+    headings.forEach((heading) => observer.observe(heading));
+
+    return () => observer.disconnect();
+  }, [toc]);
+
   if (toc.length === 0) return null;
 
   return (
-    <nav className="mb-8 border border-gray-200 rounded-lg bg-gray-50/50">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 rounded-lg transition-colors"
-      >
-        <span className="text-sm font-medium text-gray-500">목차</span>
-        <svg
-          className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {isOpen && (
-        <ul className="px-4 pb-3 space-y-1">
+    <nav className="sticky top-8">
+      <div className="border-l-2 border-gray-200 pl-4">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          목차
+        </p>
+        <ul className="space-y-2">
           {toc.map((item) => (
             <li
               key={item.id}
-              style={{ paddingLeft: `${(item.level - 2) * 1}rem` }}
+              style={{ paddingLeft: `${(item.level - 2) * 0.75}rem` }}
             >
               <a
                 href={`#${item.id}`}
-                className="block py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded px-2 -mx-2 transition-colors"
+                className={`block text-sm leading-relaxed transition-colors ${
+                  activeId === item.id
+                    ? "text-blue-600 font-medium"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
               >
                 {item.text}
               </a>
             </li>
           ))}
         </ul>
-      )}
+      </div>
     </nav>
   );
 }
