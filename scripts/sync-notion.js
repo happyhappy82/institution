@@ -20,8 +20,16 @@ if (!fs.existsSync(IMAGES_DIR)) {
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 }
 
-function generateSlug(title, date, pageId) {
-  // 날짜 + pageId 앞 8자로 slug 생성 (Vercel 한글 폴더명 미지원)
+function generateSlug(title) {
+  // 한글 slug 생성 (URL용)
+  return title
+    .replace(/[^a-z0-9가-힣\s-]/gi, '')
+    .replace(/\s+/g, '')
+    .trim();
+}
+
+function generateFilename(date, pageId) {
+  // 파일명은 영문 (날짜 + pageId 앞 8자)
   const shortId = pageId.replace(/-/g, '').slice(0, 8);
   return `${date}-${shortId}`;
 }
@@ -116,13 +124,15 @@ async function processPage(pageId, isNew = false) {
     return null;
   }
 
-  const slug = generateSlug(props.title, props.date, pageId);
-  console.log(`\\n📝 Processing: ${props.title} (${slug})`);
+  const slug = generateSlug(props.title);
+  const filename = generateFilename(props.date, pageId);
+  console.log(`\\n📝 Processing: ${props.title}`);
+  console.log(`   Slug: ${slug}, Filename: ${filename}`);
   console.log(`   Status: ${props.status}, Date: ${props.date}`);
 
   const existingFile = findExistingFileByPageId(pageId);
-  if (existingFile.exists && existingFile.slug !== slug) {
-    console.log(`  🔄 Title changed, removing old file: ${existingFile.fileName}`);
+  if (existingFile.exists) {
+    console.log(`  🔄 Updating existing file: ${existingFile.fileName}`);
     fs.unlinkSync(existingFile.filePath);
   }
 
@@ -135,7 +145,7 @@ async function processPage(pageId, isNew = false) {
       const urlMatch = match.match(/\((https?:\/\/.*?)\)/);
       if (urlMatch) {
         const imageUrl = urlMatch[1];
-        const imageFilename = `${slug}-${Date.now()}-${path.basename(new URL(imageUrl).pathname)}`;
+        const imageFilename = `${filename}-${Date.now()}-${path.basename(new URL(imageUrl).pathname)}`;
         const imagePath = path.join(IMAGES_DIR, imageFilename);
 
         try {
@@ -170,6 +180,7 @@ async function processPage(pageId, isNew = false) {
 
   const frontmatter = `---
 title: "${escapeYaml(props.title)}"
+slug: "${slug}"
 date: "${props.date}"
 excerpt: "${escapeYaml(excerpt || '')}"
 lightColor: "${props.lightColor}"
@@ -180,7 +191,7 @@ notionPageId: "${props.pageId}"
 `;
 
   const fullContent = frontmatter + markdown;
-  const filePath = path.join(POLICIES_DIR, `${slug}.md`);
+  const filePath = path.join(POLICIES_DIR, `${filename}.md`);
 
   fs.writeFileSync(filePath, fullContent, 'utf-8');
 
@@ -235,7 +246,7 @@ async function scheduledSync() {
 
     if (!props.title) continue;
 
-    const slug = generateSlug(props.title, props.date, pageId);
+    const slug = generateSlug(props.title);
     const existingFile = findExistingFileByPageId(pageId);
 
     if (!existingFile.exists) {
@@ -281,7 +292,7 @@ async function webhookSync() {
     return false;
   }
 
-  const slug = generateSlug(props.title, props.date, pageId);
+  const slug = generateSlug(props.title);
   const status = props.status;
 
   console.log(`   Title: ${props.title}`);
@@ -289,9 +300,14 @@ async function webhookSync() {
   console.log(`   Status: ${status}`);
 
   if (status === 'Deleted') {
-    console.log(`\\n🗑️  Deleting property: ${slug}`);
-    const deleted = deletePolicyFile(slug);
-    return deleted;
+    console.log(`\\n🗑️  Deleting property by pageId: ${pageId}`);
+    const existingFile = findExistingFileByPageId(pageId);
+    if (existingFile.exists) {
+      fs.unlinkSync(existingFile.filePath);
+      console.log(`  🗑️  Deleted: ${existingFile.fileName}`);
+      return true;
+    }
+    return false;
   }
 
   if (status === 'Published') {
