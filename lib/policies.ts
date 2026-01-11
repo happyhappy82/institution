@@ -41,12 +41,10 @@ export function getSortedPropertiesData(): Policy[] {
   const allPropertiesData = fileNames
     .filter((fileName) => fileName.endsWith('.md'))
     .map((fileName) => {
+      const slug = fileName.replace(/\.md$/, '');
       const fullPath = path.join(policiesDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, 'utf8');
       const { data, content } = matter(fileContents);
-
-      // frontmatter의 slug 사용, 없으면 파일명 사용
-      const slug = data.slug || fileName.replace(/\.md$/, '');
 
       return {
         slug,
@@ -71,36 +69,24 @@ export function getSortedPropertiesData(): Policy[] {
 }
 
 export function getPolicyBySlug(slug: string): Policy | null {
-  if (!fs.existsSync(policiesDirectory)) {
+  const fullPath = path.join(policiesDirectory, `${slug}.md`);
+
+  if (!fs.existsSync(fullPath)) {
     return null;
   }
 
-  const fileNames = fs.readdirSync(policiesDirectory);
+  const fileContents = fs.readFileSync(fullPath, 'utf8');
+  const { data, content } = matter(fileContents);
 
-  for (const fileName of fileNames) {
-    if (!fileName.endsWith('.md')) continue;
-
-    const fullPath = path.join(policiesDirectory, fileName);
-    const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const { data, content } = matter(fileContents);
-
-    // frontmatter의 slug 또는 파일명과 비교
-    const fileSlug = data.slug || fileName.replace(/\.md$/, '');
-
-    if (fileSlug === slug) {
-      return {
-        slug: fileSlug,
-        title: data.title || '',
-        date: data.date || '',
-        excerpt: data.excerpt || extractExcerpt(content),
-        content,
-        lightColor: data.lightColor || 'lab(62.926 59.277 -1.573)',
-        darkColor: data.darkColor || 'lab(80.993 32.329 -7.093)',
-        readingTime: readingTime(content).text,
-        notionPageId: data.notionPageId,
-      };
-    }
-  }
-
-  return null;
+  return {
+    slug,
+    title: data.title || '',
+    date: data.date || '',
+    excerpt: data.excerpt || extractExcerpt(content),
+    content,
+    lightColor: data.lightColor || 'lab(62.926 59.277 -1.573)',
+    darkColor: data.darkColor || 'lab(80.993 32.329 -7.093)',
+    readingTime: readingTime(content).text,
+    notionPageId: data.notionPageId,
+  };
 }
