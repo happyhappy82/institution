@@ -5,6 +5,7 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 const matter = require('gray-matter');
+const { slugify } = require('transliteration');
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const n2m = new NotionToMarkdown({ notionClient: notion });
@@ -20,13 +21,20 @@ if (!fs.existsSync(IMAGES_DIR)) {
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 }
 
-function generateSlug(customSlug, date, pageId) {
-  // Notion에서 입력한 slug 사용, 없으면 날짜-pageId
+function generateSlug(customSlug, title, date) {
+  // 1. Notion에서 입력한 slug 사용
   if (customSlug && customSlug.trim()) {
     return customSlug.trim().toLowerCase().replace(/\s+/g, '-');
   }
-  const shortId = pageId.replace(/-/g, '').slice(0, 8);
-  return `${date}-${shortId}`;
+  // 2. 제목에서 자동 생성 (한글 → 로마자 변환)
+  if (title && title.trim()) {
+    const slug = slugify(title, { lowercase: true, separator: '-' });
+    // 너무 길면 50자로 제한
+    const trimmed = slug.slice(0, 50).replace(/-+$/, '');
+    return `${date}-${trimmed}`;
+  }
+  // 3. 폴백
+  return `${date}-untitled`;
 }
 
 function downloadImage(url, filepath) {
@@ -120,7 +128,7 @@ async function processPage(pageId, isNew = false) {
     return null;
   }
 
-  const slug = generateSlug(props.slug, props.date, pageId);
+  const slug = generateSlug(props.slug, props.title, props.date);
   console.log(`\\n📝 Processing: ${props.title}`);
   console.log(`   Slug: ${slug}${props.slug ? ' (custom)' : ' (auto)'}`);
   console.log(`   Status: ${props.status}, Date: ${props.date}`);
@@ -240,7 +248,7 @@ async function scheduledSync() {
 
     if (!props.title) continue;
 
-    const slug = generateSlug(props.slug, props.date, pageId);
+    const slug = generateSlug(props.slug, props.title, props.date);
     const existingFile = findExistingFileByPageId(pageId);
 
     if (!existingFile.exists) {
@@ -286,7 +294,7 @@ async function webhookSync() {
     return false;
   }
 
-  const slug = generateSlug(props.slug, props.date, pageId);
+  const slug = generateSlug(props.slug, props.title, props.date);
   const status = props.status;
 
   console.log(`   Title: ${props.title}`);
