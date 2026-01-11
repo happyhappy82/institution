@@ -168,10 +168,13 @@ async function processPage(pageId, isNew = false) {
     }
   }
 
+  // YAML 문자열 이스케이프 (쌍따옴표 → 홑따옴표)
+  const escapeYaml = (str) => str ? str.replace(/"/g, "'") : '';
+
   const frontmatter = `---
-title: "${props.title}"
+title: "${escapeYaml(props.title)}"
 date: "${props.date}"
-excerpt: "${excerpt || ''}"
+excerpt: "${escapeYaml(excerpt || '')}"
 lightColor: "${props.lightColor}"
 darkColor: "${props.darkColor}"
 notionPageId: "${props.pageId}"
