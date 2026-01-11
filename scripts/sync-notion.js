@@ -20,8 +20,11 @@ if (!fs.existsSync(IMAGES_DIR)) {
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 }
 
-function generateSlug(date, pageId) {
-  // 영문 slug (날짜 + pageId 앞 8자)
+function generateSlug(customSlug, date, pageId) {
+  // Notion에서 입력한 slug 사용, 없으면 날짜-pageId
+  if (customSlug && customSlug.trim()) {
+    return customSlug.trim().toLowerCase().replace(/\s+/g, '-');
+  }
   const shortId = pageId.replace(/-/g, '').slice(0, 8);
   return `${date}-${shortId}`;
 }
@@ -69,6 +72,7 @@ async function getPageProperties(pageId) {
   return {
     pageId: page.id,
     title: getFullText(properties.Title?.title) || '',
+    slug: getFullText(properties.Slug?.rich_text) || '',
     date: properties.Date?.date?.start || new Date().toISOString().split('T')[0],
     excerpt: getFullText(properties.Excerpt?.rich_text) || '',
     lightColor: getFullText(properties.LightColor?.rich_text) || 'lab(62.926 59.277 -1.573)',
@@ -116,9 +120,9 @@ async function processPage(pageId, isNew = false) {
     return null;
   }
 
-  const slug = generateSlug(props.date, pageId);
+  const slug = generateSlug(props.slug, props.date, pageId);
   console.log(`\\n📝 Processing: ${props.title}`);
-  console.log(`   Slug: ${slug}`);
+  console.log(`   Slug: ${slug}${props.slug ? ' (custom)' : ' (auto)'}`);
   console.log(`   Status: ${props.status}, Date: ${props.date}`);
 
   const existingFile = findExistingFileByPageId(pageId);
@@ -236,7 +240,7 @@ async function scheduledSync() {
 
     if (!props.title) continue;
 
-    const slug = generateSlug(props.date, pageId);
+    const slug = generateSlug(props.slug, props.date, pageId);
     const existingFile = findExistingFileByPageId(pageId);
 
     if (!existingFile.exists) {
@@ -282,7 +286,7 @@ async function webhookSync() {
     return false;
   }
 
-  const slug = generateSlug(props.date, pageId);
+  const slug = generateSlug(props.slug, props.date, pageId);
   const status = props.status;
 
   console.log(`   Title: ${props.title}`);
