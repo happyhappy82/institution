@@ -20,13 +20,10 @@ if (!fs.existsSync(IMAGES_DIR)) {
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 }
 
-function generateSlug(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9가-힣\\s-]/g, '')
-    .replace(/\\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
+function generateSlug(title, date, pageId) {
+  // 날짜 + pageId 앞 8자로 slug 생성 (Vercel 한글 폴더명 미지원)
+  const shortId = pageId.replace(/-/g, '').slice(0, 8);
+  return `${date}-${shortId}`;
 }
 
 function downloadImage(url, filepath) {
@@ -119,7 +116,7 @@ async function processPage(pageId, isNew = false) {
     return null;
   }
 
-  const slug = generateSlug(props.title);
+  const slug = generateSlug(props.title, props.date, pageId);
   console.log(`\\n📝 Processing: ${props.title} (${slug})`);
   console.log(`   Status: ${props.status}, Date: ${props.date}`);
 
@@ -238,7 +235,7 @@ async function scheduledSync() {
 
     if (!props.title) continue;
 
-    const slug = generateSlug(props.title);
+    const slug = generateSlug(props.title, props.date, pageId);
     const existingFile = findExistingFileByPageId(pageId);
 
     if (!existingFile.exists) {
@@ -284,7 +281,7 @@ async function webhookSync() {
     return false;
   }
 
-  const slug = generateSlug(props.title);
+  const slug = generateSlug(props.title, props.date, pageId);
   const status = props.status;
 
   console.log(`   Title: ${props.title}`);
