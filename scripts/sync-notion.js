@@ -56,14 +56,18 @@ const koreanToEnglish = {
   '소득공제': 'income-deduction',
 };
 
+// 제거할 한국어 조사/어미
+const removePatterns = [
+  '은', '는', '이', '가', '을', '를', '에', '의', '로', '으로',
+  '일까', '인가', '할까', '한가', '될까', '인지', '하는',
+  '입니다', '습니다', '에요', '해요', '하세요', '세요',
+  '클릭', '확인', '알아보기', '정리',
+];
+
 function translateToEnglishSlug(title) {
   let result = title;
 
-  // 연도 추출 (예: 2026)
-  const yearMatch = title.match(/(\d{4})/);
-  const year = yearMatch ? yearMatch[1] : '';
-
-  // 연도 제거 후 처리
+  // 연도 제거 (generateSlug에서 date로 처리)
   result = result.replace(/\d{4}년?/g, '').trim();
 
   // 한국어 키워드를 영어로 변환 (긴 키워드 먼저 매칭)
@@ -73,15 +77,20 @@ function translateToEnglishSlug(title) {
   for (const korean of sortedKeywords) {
     if (result.includes(korean)) {
       englishParts.push(koreanToEnglish[korean]);
-      result = result.replace(korean, '');
+      result = result.replace(new RegExp(korean, 'g'), '');
     }
   }
 
-  // 남은 한글이 있으면 transliteration으로 변환
+  // 조사/어미 제거
+  for (const pattern of removePatterns) {
+    result = result.replace(new RegExp(pattern, 'g'), '');
+  }
+
+  // 남은 한글이 있으면 transliteration으로 변환 (단, 의미없는 짧은 조각은 제외)
   const remaining = result.replace(/[^가-힣a-zA-Z0-9]/g, '').trim();
-  if (remaining && /[가-힣]/.test(remaining)) {
+  if (remaining && remaining.length > 1 && /[가-힣]/.test(remaining)) {
     const transliterated = slugify(remaining, { lowercase: true, separator: '-' });
-    if (transliterated) {
+    if (transliterated && transliterated.length > 2) {
       englishParts.push(transliterated);
     }
   }
@@ -89,11 +98,6 @@ function translateToEnglishSlug(title) {
   // 중복 제거 및 정리
   const uniqueParts = [...new Set(englishParts)];
   let slug = uniqueParts.join('-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-
-  // 연도를 앞에 추가
-  if (year) {
-    slug = `${year}-${slug}`;
-  }
 
   return slug || 'untitled';
 }
