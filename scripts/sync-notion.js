@@ -21,20 +21,105 @@ if (!fs.existsSync(IMAGES_DIR)) {
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 }
 
+// 한국어 키워드 → 영어 변환 매핑
+const koreanToEnglish = {
+  '고향사랑기부제': 'hometown-love-donation',
+  '고향사랑': 'hometown-love',
+  '기부제': 'donation-tax',
+  '기부금': 'donation',
+  '세액공제': 'tax-deduction',
+  '마감일': 'deadline',
+  '마감': 'deadline',
+  '신청': 'application',
+  '신청방법': 'how-to-apply',
+  '방법': 'guide',
+  '조건': 'requirements',
+  '자격': 'eligibility',
+  '혜택': 'benefits',
+  '금액': 'amount',
+  '한도': 'limit',
+  '거주지': 'residence',
+  '주소지': 'address',
+  '언제': 'when',
+  '어디서': 'where',
+  '누가': 'who',
+  '어떻게': 'how',
+  '정부지원금': 'government-subsidy',
+  '정부': 'government',
+  '지원금': 'subsidy',
+  '보조금': 'grant',
+  '청년': 'youth',
+  '노인': 'senior',
+  '장애인': 'disability',
+  '저소득': 'low-income',
+  '연말정산': 'year-end-tax',
+  '소득공제': 'income-deduction',
+};
+
+function translateToEnglishSlug(title) {
+  let result = title;
+
+  // 연도 추출 (예: 2026)
+  const yearMatch = title.match(/(\d{4})/);
+  const year = yearMatch ? yearMatch[1] : '';
+
+  // 연도 제거 후 처리
+  result = result.replace(/\d{4}년?/g, '').trim();
+
+  // 한국어 키워드를 영어로 변환 (긴 키워드 먼저 매칭)
+  const sortedKeywords = Object.keys(koreanToEnglish).sort((a, b) => b.length - a.length);
+  let englishParts = [];
+
+  for (const korean of sortedKeywords) {
+    if (result.includes(korean)) {
+      englishParts.push(koreanToEnglish[korean]);
+      result = result.replace(korean, '');
+    }
+  }
+
+  // 남은 한글이 있으면 transliteration으로 변환
+  const remaining = result.replace(/[^가-힣a-zA-Z0-9]/g, '').trim();
+  if (remaining && /[가-힣]/.test(remaining)) {
+    const transliterated = slugify(remaining, { lowercase: true, separator: '-' });
+    if (transliterated) {
+      englishParts.push(transliterated);
+    }
+  }
+
+  // 중복 제거 및 정리
+  const uniqueParts = [...new Set(englishParts)];
+  let slug = uniqueParts.join('-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+  // 연도를 앞에 추가
+  if (year) {
+    slug = `${year}-${slug}`;
+  }
+
+  return slug || 'untitled';
+}
+
+function getDateOnly(dateStr) {
+  // ISO 날짜에서 YYYY-MM-DD만 추출
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  return dateStr.split('T')[0];
+}
+
 function generateSlug(customSlug, title, date) {
+  const dateOnly = getDateOnly(date);
+
   // 1. Notion에서 입력한 slug 사용
   if (customSlug && customSlug.trim()) {
     return customSlug.trim().toLowerCase().replace(/\s+/g, '-');
   }
-  // 2. 제목에서 자동 생성 (한글 → 로마자 변환)
+  // 2. 제목에서 자동 생성 (한글 → 영어 키워드 변환)
   if (title && title.trim()) {
-    const slug = slugify(title, { lowercase: true, separator: '-' });
-    // 너무 길면 50자로 제한
-    const trimmed = slug.slice(0, 50).replace(/-+$/, '');
-    return `${date}-${trimmed}`;
+    const englishSlug = translateToEnglishSlug(title);
+    // 너무 길면 60자로 제한
+    const trimmed = englishSlug.slice(0, 60).replace(/-+$/, '');
+    return `${dateOnly}-${trimmed}`;
   }
   // 3. 폴백
-  return `${date}-untitled`;
+  return `${dateOnly}-untitled`;
 }
 
 function downloadImage(url, filepath) {
