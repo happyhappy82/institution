@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import Header from "@/components/Header";
 import TableOfContents from "@/components/TableOfContents";
 import QnA from "@/components/QnA";
@@ -109,6 +110,7 @@ export default async function PolicyPage({ params }: Props) {
           <div className="prose prose-lg max-w-none">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
               components={{
                 h2: ({ node, ...props }) => {
                   const text = props.children?.toString() || "";
