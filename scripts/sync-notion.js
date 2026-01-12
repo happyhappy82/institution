@@ -272,7 +272,7 @@ async function processPage(pageId, isNew = false) {
 
   const frontmatter = `---
 title: "${escapeYaml(props.title)}"
-date: "${props.date}"
+date: "${getDateOnly(props.date)}"
 excerpt: "${escapeYaml(excerpt || '')}"
 lightColor: "${props.lightColor}"
 darkColor: "${props.darkColor}"
