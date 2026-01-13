@@ -9,7 +9,7 @@ const notoSansKR = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
 });
 
-const baseUrl = "https://policyinfolab.xyz";
+const baseUrl = "https://www.krgovpolicy.xyz";
 
 export const viewport: Viewport = {
   width: "device-width",

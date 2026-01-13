@@ -9,7 +9,7 @@ import { getPolicyBySlug, getSortedPropertiesData } from "@/lib/policies";
 import { extractQnA, removeQnASection } from "@/lib/qna-utils";
 import type { Metadata } from "next";
 
-const baseUrl = "https://policyinfolab.xyz";
+const baseUrl = "https://www.krgovpolicy.xyz";
 
 interface Props {
   params: Promise<{ slug: string }>;

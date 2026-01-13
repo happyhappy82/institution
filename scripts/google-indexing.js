@@ -1,6 +1,6 @@
 const { google } = require('googleapis');
 
-const SITE_URL = 'https://policyinfolab.xyz';
+const SITE_URL = 'https://www.krgovpolicy.xyz';
 
 async function submitToGoogle() {
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;

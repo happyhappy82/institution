@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 
-const SITE_URL = "https://policyinfolab.xyz";
+const SITE_URL = "https://www.krgovpolicy.xyz";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const policiesDir = path.join(process.cwd(), "content/policies");
