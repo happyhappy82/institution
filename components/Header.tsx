@@ -11,7 +11,7 @@ export default function Header() {
           height={56}
           className="w-14 h-14"
         />
-        <h1 className="text-2xl font-black text-blue-600">정부지원금 알리미</h1>
+        <span className="text-2xl font-black text-blue-600">정부지원금 알리미</span>
       </a>
     </header>
   );

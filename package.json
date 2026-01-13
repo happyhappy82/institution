@@ -6,7 +6,8 @@
     "dev": "next dev -p 3005",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "submit": "node scripts/google-indexing.js"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",

@@ -1,5 +1,15 @@
 import type { Metadata, Viewport } from "next";
+import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
+  display: "swap",
+  variable: "--font-noto-sans-kr",
+});
+
+const baseUrl = "https://policyinfolab.xyz";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -8,13 +18,19 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "정부지원금 알리미",
+  title: {
+    default: "정부지원금 알리미",
+    template: "%s | 정부지원금 알리미",
+  },
   description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
-  metadataBase: new URL("https://policyinfolab.xyz"),
-  keywords: ["정부 지원금", "정책자금", "보조금", "장려금", "지원금 혜택"],
+  metadataBase: new URL(baseUrl),
+  keywords: ["정부 지원금", "정책자금", "보조금", "장려금", "지원금 혜택", "정부 보조금", "지원금 신청"],
   authors: [{ name: "정부지원금 알리미" }],
   creator: "정부지원금 알리미",
   publisher: "정부지원금 알리미",
+  alternates: {
+    canonical: baseUrl,
+  },
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
@@ -24,14 +40,14 @@ export const metadata: Metadata = {
     description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
     type: "website",
     locale: "ko_KR",
-    url: "https://policyinfolab.xyz",
+    url: baseUrl,
     siteName: "정부지원금 알리미",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
-        height: 1200,
-        alt: "정부지원금 알리미",
+        height: 630,
+        alt: "정부지원금 알리미 - 정부 지원금 정보 안내",
       },
     ],
   },
@@ -39,7 +55,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "정부지원금 알리미",
     description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
-    images: ["/og-image.png"],
+    images: [
+      {
+        url: "/og-image.png",
+        alt: "정부지원금 알리미 - 정부 지원금 정보 안내",
+      },
+    ],
   },
   robots: {
     index: true,
@@ -65,15 +86,38 @@ export default function RootLayout({
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "정부지원금 알리미",
-    "alternateName": "정부지원금 알리미",
-    "url": "https://policyinfolab.xyz",
-    "description": "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
+    name: "정부지원금 알리미",
+    alternateName: "정부지원금 알리미",
+    url: baseUrl,
+    description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다. 정부 보조금 및 장려금 정보, 지원금 등 내가 받을 수 있는 지원금 혜택 확인하기",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${baseUrl}/?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "정부지원금 알리미",
+    url: baseUrl,
+    logo: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/logo.png`,
+      width: 512,
+      height: 512,
+    },
+    description: "각종 정부지원금, 정책자금 등 정보를 얻어가실 수 있습니다.",
   };
 
   return (
-    <html lang="ko">
+    <html lang="ko" className={notoSansKR.variable}>
       <head>
+        <meta charSet="UTF-8" />
         {/* Google Analytics (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSMT731ZCL" />
         <script
@@ -100,8 +144,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
       </head>
-      <body className="mx-auto max-w-5xl bg-white px-5 py-12 text-black">
+      <body className={`${notoSansKR.className} mx-auto max-w-5xl bg-white px-5 py-12 text-black`}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe

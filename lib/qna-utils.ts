@@ -4,7 +4,7 @@ interface QnAItem {
 }
 
 export function extractQnA(content: string): QnAItem[] {
-  const qnaRegex = /##\s*자주\s*묻는\s*질문\s*\n([\s\S]*?)(?=\n##\s|\n#\s|$)/i;
+  const qnaRegex = /##\s*자주\s*묻는\s*질문[^\n]*\n([\s\S]*?)(?=\n##\s[^#]|\n#\s|$)/i;
   const match = content.match(qnaRegex);
 
   if (!match) return [];
@@ -32,6 +32,6 @@ export function extractQnA(content: string): QnAItem[] {
 }
 
 export function removeQnASection(content: string): string {
-  const qnaRegex = /##\s*자주\s*묻는\s*질문\s*\n[\s\S]*$/i;
+  const qnaRegex = /##\s*자주\s*묻는\s*질문[^\n]*\n[\s\S]*$/i;
   return content.replace(qnaRegex, '').trim();
 }
