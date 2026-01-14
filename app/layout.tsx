@@ -118,6 +118,7 @@ export default function RootLayout({
     <html lang="ko" className={notoSansKR.variable}>
       <head>
         <meta charSet="UTF-8" />
+        <meta name="naver-site-verification" content="95e7d0419f2bfbe91a17d28069c31ef455758def" />
         {/* Google Analytics (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSMT731ZCL" />
         <script
