@@ -1,15 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_KR } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-
-const notoSansKR = Noto_Sans_KR({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  variable: "--font-noto-sans-kr",
-  preload: true,
-});
 
 const baseUrl = "https://www.krgovpolicy.xyz";
 
@@ -117,7 +108,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ko" className={notoSansKR.variable}>
+    <html lang="ko">
       <head>
         <meta charSet="UTF-8" />
         <meta name="naver-site-verification" content="95e7d0419f2bfbe91a17d28069c31ef455758def" />
@@ -135,7 +126,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
       </head>
-      <body className={`${notoSansKR.className} mx-auto max-w-5xl bg-white px-5 py-12 text-black`}>
+      <body className="mx-auto max-w-5xl bg-white px-5 py-12 text-black">
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -148,12 +139,12 @@ export default function RootLayout({
         {/* End Google Tag Manager (noscript) */}
         {children}
 
-        {/* Google Analytics - loaded after page is interactive */}
+        {/* Google Analytics - loaded lazily after page load */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-VSMT731ZCL"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -162,8 +153,8 @@ export default function RootLayout({
           `}
         </Script>
 
-        {/* Google Tag Manager - loaded after page is interactive */}
-        <Script id="google-tag-manager" strategy="afterInteractive">
+        {/* Google Tag Manager - loaded lazily after page load */}
+        <Script id="google-tag-manager" strategy="lazyOnload">
           {`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
