@@ -10,22 +10,20 @@ const description = "각종 정부지원금, 정책자금 등 정보를 얻어�
 
 <Layout title="정부지원금 알리미" description={description}>
   <Header />
-  <main>
-    <div class="relative -top-[10px] flex flex-col gap-8">
-      {policies.length === 0 ? (
-        <p>No policies yet. Create your first property in content/policies/</p>
-      ) : (
-        policies.map((policy) => (
-          <PolicyCard
-            key={policy.slug}
-            title={policy.title}
-            date={policy.date}
-            excerpt={policy.excerpt}
-            slug={policy.slug}
-            lightColor={policy.lightColor}
-          />
-        ))
-      )}
-    </div>
-  </main>
+  <div class="relative -top-[10px] flex flex-col gap-8">
+    {policies.length === 0 ? (
+      <p>No policies yet. Create your first property in content/policies/</p>
+    ) : (
+      policies.map((policy) => (
+        <PolicyCard
+          key={policy.slug}
+          title={policy.title}
+          date={policy.date}
+          excerpt={policy.excerpt}
+          slug={policy.slug}
+          lightColor={policy.lightColor}
+        />
+      ))
+    )}
+  </div>
 </Layout>
