@@ -29,6 +29,36 @@ const url = `${baseUrl}/${slug}`;
 function processMarkdown(content: string): string {
   let html = content;
 
+  // Process tables first (before other transformations)
+  html = html.replace(/(\|.+\|[\r\n]+\|[-:\s|]+\|[\r\n]+(?:\|.+\|[\r\n]*)+)/g, (tableMatch) => {
+    const rows = tableMatch.trim().split('\n').filter(row => row.trim());
+    if (rows.length < 2) return tableMatch;
+
+    const headerRow = rows[0];
+    const headerCells = headerRow.split('|').filter(cell => cell.trim() !== '').map(cell => cell.trim());
+
+    // Skip the separator row (index 1)
+    const bodyRows = rows.slice(2);
+
+    let tableHtml = '<table class="w-full border-collapse my-4"><thead><tr>';
+    headerCells.forEach(cell => {
+      tableHtml += `<th class="border border-gray-300 bg-gray-100 px-4 py-2 text-left font-semibold">${cell}</th>`;
+    });
+    tableHtml += '</tr></thead><tbody>';
+
+    bodyRows.forEach(row => {
+      const cells = row.split('|').filter(cell => cell.trim() !== '').map(cell => cell.trim());
+      tableHtml += '<tr>';
+      cells.forEach(cell => {
+        tableHtml += `<td class="border border-gray-300 px-4 py-2">${cell}</td>`;
+      });
+      tableHtml += '</tr>';
+    });
+
+    tableHtml += '</tbody></table>';
+    return tableHtml;
+  });
+
   // Process headings with IDs
   html = html.replace(/^### (.+)$/gm, (_, text) => {
     const id = text.toLowerCase().replace(/\s+/g, '-');
