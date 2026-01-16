@@ -5,6 +5,10 @@ node_modules/
 .next/
 out/
 
+# Astro build output
+dist/
+.astro/
+
 # misc
 .DS_Store
 *.pem

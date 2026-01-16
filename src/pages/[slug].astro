@@ -1,0 +1,188 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import TableOfContents from '../components/TableOfContents.tsx';
+import QnA from '../components/QnA.tsx';
+import { getSortedPoliciesData, getPolicyBySlug } from '../lib/policies';
+import { extractQnA, removeQnASection } from '../lib/qna-utils';
+
+export async function getStaticPaths() {
+  const policies = getSortedPoliciesData();
+  return policies.map((policy) => ({
+    params: { slug: policy.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const policy = getPolicyBySlug(slug as string);
+
+if (!policy) {
+  return Astro.redirect('/404');
+}
+
+const qnaItems = extractQnA(policy.content);
+const contentWithoutQnA = removeQnASection(policy.content);
+const baseUrl = 'https://www.krgovpolicy.xyz';
+const url = `${baseUrl}/${slug}`;
+
+// Convert markdown to HTML with heading IDs
+function processMarkdown(content: string): string {
+  let html = content;
+
+  // Process headings with IDs
+  html = html.replace(/^### (.+)$/gm, (_, text) => {
+    const id = text.toLowerCase().replace(/\s+/g, '-');
+    return `<h3 id="${id}">${text}</h3>`;
+  });
+  html = html.replace(/^## (.+)$/gm, (_, text) => {
+    const id = text.toLowerCase().replace(/\s+/g, '-');
+    return `<h2 id="${id}">${text}</h2>`;
+  });
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // Process other markdown
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/\[(.+?)\]\((.+?)\)/g, (_, text, href) => {
+    const isExternal = href.startsWith('http') && !href.includes('krgovpolicy.xyz');
+    return isExternal
+      ? `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`
+      : `<a href="${href}">${text}</a>`;
+  });
+
+  // Process lists
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+  // Process paragraphs
+  html = html.split('\n\n').map(block => {
+    if (block.startsWith('<')) return block;
+    if (block.trim() === '') return '';
+    return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+  }).join('\n');
+
+  return html;
+}
+
+const htmlContent = processMarkdown(contentWithoutQnA);
+
+// Article Schema
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: policy.title,
+  description: policy.excerpt,
+  image: `${baseUrl}/og-image.png`,
+  author: {
+    "@type": "Organization",
+    name: "정부지원금 알리미",
+    url: baseUrl,
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "정부지원금 알리미",
+    url: baseUrl,
+    logo: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/logo.png`,
+      width: 512,
+      height: 512,
+    },
+  },
+  datePublished: policy.date,
+  dateModified: policy.date,
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": url,
+  },
+};
+
+// BreadcrumbList Schema
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "홈",
+      item: baseUrl,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: policy.title,
+      item: url,
+    },
+  ],
+};
+
+// FAQPage Schema
+const faqSchema = qnaItems.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: qnaItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+} : null;
+---
+
+<Layout
+  title={policy.title}
+  description={policy.excerpt}
+  canonical={url}
+  publishedTime={policy.date}
+  isArticle={true}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
+  </Fragment>
+
+  <Header />
+  <div class="lg:flex lg:gap-8">
+    <!-- Main Content -->
+    <article class="lg:flex-1 lg:max-w-2xl">
+      <!-- Breadcrumb Navigation -->
+      <nav aria-label="Breadcrumb" class="mb-4 text-sm text-gray-500">
+        <ol class="flex items-center gap-2">
+          <li>
+            <a href="/" class="hover:text-blue-600">홈</a>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <span aria-current="page">{policy.title}</span>
+          </li>
+        </ol>
+      </nav>
+
+      <div class="mb-8">
+        <h1
+          class="text-[42px] font-black leading-tight mb-4"
+          style={`color: ${policy.lightColor}`}
+        >
+          {policy.title}
+        </h1>
+        <div class="flex gap-4 text-sm text-gray-600">
+          <time datetime={policy.date}>{policy.date}</time>
+          <span>{policy.readingTime}</span>
+        </div>
+      </div>
+
+      <div class="prose prose-lg max-w-none" set:html={htmlContent} />
+
+      <QnA items={qnaItems} client:visible />
+    </article>
+
+    <!-- Sidebar TOC -->
+    <aside class="hidden lg:block lg:w-64 lg:flex-shrink-0">
+      <TableOfContents client:idle />
+    </aside>
+  </div>
+</Layout>
