@@ -30,58 +30,55 @@ function processMarkdown(content: string): string {
   let html = content;
 
   // Pre-process: join multiline table cells
-  // Find table blocks and normalize them
   const lines = html.split('\n');
   const processedLines: string[] = [];
-  let inTable = false;
   let currentRow = '';
+  let inMultilineRow = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // Check if this is a table row (starts and ends with |)
+    // Complete row: starts and ends with |
     if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-      if (currentRow) {
+      if (inMultilineRow && currentRow) {
+        // Previous multiline row wasn't properly closed, push it anyway
         processedLines.push(currentRow);
         currentRow = '';
+        inMultilineRow = false;
       }
-      processedLines.push(line);
-      inTable = true;
+      processedLines.push(trimmed);
     }
-    // Check if this is a continuation of a table cell (starts with | but doesn't end with |, or doesn't start with | but we're in a table)
-    else if (inTable && trimmed.startsWith('|') && !trimmed.endsWith('|')) {
-      currentRow = line;
-    }
-    // Continuation line (doesn't start with |, but previous line was incomplete)
-    else if (currentRow && !trimmed.startsWith('|') && !trimmed.startsWith('#')) {
-      // Find the last | in currentRow and append before it
-      const lastPipeIndex = currentRow.lastIndexOf('|');
-      if (lastPipeIndex > 0) {
-        currentRow = currentRow.slice(0, lastPipeIndex) + ' ' + trimmed + ' |';
+    // Start of multiline row: starts with | but doesn't end with |
+    else if (trimmed.startsWith('|') && !trimmed.endsWith('|')) {
+      if (inMultilineRow && currentRow) {
+        processedLines.push(currentRow);
       }
+      currentRow = trimmed;
+      inMultilineRow = true;
     }
-    // Check if line ends with | (completing a multiline cell)
-    else if (currentRow && trimmed.endsWith('|')) {
-      const lastPipeIndex = currentRow.lastIndexOf('|');
-      if (lastPipeIndex > 0) {
-        currentRow = currentRow.slice(0, lastPipeIndex) + ' ' + trimmed;
-      }
+    // End of multiline row: doesn't start with | but ends with |
+    else if (inMultilineRow && !trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      currentRow = currentRow + ' ' + trimmed;
       processedLines.push(currentRow);
       currentRow = '';
+      inMultilineRow = false;
     }
+    // Middle of multiline row: doesn't start or end with |
+    else if (inMultilineRow && !trimmed.startsWith('|') && !trimmed.endsWith('|') && trimmed !== '') {
+      currentRow = currentRow + ' ' + trimmed;
+    }
+    // Normal line (not part of table)
     else {
-      if (currentRow) {
+      if (inMultilineRow && currentRow) {
         processedLines.push(currentRow);
         currentRow = '';
+        inMultilineRow = false;
       }
       processedLines.push(line);
-      // Check if we're leaving the table
-      if (inTable && trimmed === '') {
-        inTable = false;
-      }
     }
   }
+
   if (currentRow) {
     processedLines.push(currentRow);
   }
