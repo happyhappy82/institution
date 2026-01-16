@@ -29,7 +29,66 @@ const url = `${baseUrl}/${slug}`;
 function processMarkdown(content: string): string {
   let html = content;
 
-  // Process tables first (before other transformations)
+  // Pre-process: join multiline table cells
+  // Find table blocks and normalize them
+  const lines = html.split('\n');
+  const processedLines: string[] = [];
+  let inTable = false;
+  let currentRow = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Check if this is a table row (starts and ends with |)
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      if (currentRow) {
+        processedLines.push(currentRow);
+        currentRow = '';
+      }
+      processedLines.push(line);
+      inTable = true;
+    }
+    // Check if this is a continuation of a table cell (starts with | but doesn't end with |, or doesn't start with | but we're in a table)
+    else if (inTable && trimmed.startsWith('|') && !trimmed.endsWith('|')) {
+      currentRow = line;
+    }
+    // Continuation line (doesn't start with |, but previous line was incomplete)
+    else if (currentRow && !trimmed.startsWith('|') && !trimmed.startsWith('#')) {
+      // Find the last | in currentRow and append before it
+      const lastPipeIndex = currentRow.lastIndexOf('|');
+      if (lastPipeIndex > 0) {
+        currentRow = currentRow.slice(0, lastPipeIndex) + ' ' + trimmed + ' |';
+      }
+    }
+    // Check if line ends with | (completing a multiline cell)
+    else if (currentRow && trimmed.endsWith('|')) {
+      const lastPipeIndex = currentRow.lastIndexOf('|');
+      if (lastPipeIndex > 0) {
+        currentRow = currentRow.slice(0, lastPipeIndex) + ' ' + trimmed;
+      }
+      processedLines.push(currentRow);
+      currentRow = '';
+    }
+    else {
+      if (currentRow) {
+        processedLines.push(currentRow);
+        currentRow = '';
+      }
+      processedLines.push(line);
+      // Check if we're leaving the table
+      if (inTable && trimmed === '') {
+        inTable = false;
+      }
+    }
+  }
+  if (currentRow) {
+    processedLines.push(currentRow);
+  }
+
+  html = processedLines.join('\n');
+
+  // Process tables
   html = html.replace(/(\|.+\|[\r\n]+\|[-:\s|]+\|[\r\n]+(?:\|.+\|[\r\n]*)+)/g, (tableMatch) => {
     const rows = tableMatch.trim().split('\n').filter(row => row.trim());
     if (rows.length < 2) return tableMatch;
@@ -50,7 +109,9 @@ function processMarkdown(content: string): string {
       const cells = row.split('|').filter(cell => cell.trim() !== '').map(cell => cell.trim());
       tableHtml += '<tr>';
       cells.forEach(cell => {
-        tableHtml += `<td class="border border-gray-300 px-4 py-2">${cell}</td>`;
+        // Convert - list items to <br> for display
+        const formattedCell = cell.replace(/\s*-\s+/g, '<br>• ').replace(/^<br>/, '');
+        tableHtml += `<td class="border border-gray-300 px-4 py-2">${formattedCell}</td>`;
       });
       tableHtml += '</tr>';
     });
