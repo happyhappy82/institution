@@ -269,7 +269,9 @@ const faqSchema = qnaItems.length > 0 ? {
 
     <!-- Sidebar TOC -->
     <aside class="hidden lg:block lg:w-64 lg:flex-shrink-0">
-      <TableOfContents client:idle />
+      <div class="sticky top-8">
+        <TableOfContents client:idle />
+      </div>
     </aside>
   </div>
 </Layout>
