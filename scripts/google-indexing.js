@@ -33,7 +33,7 @@ async function submitSitemap(credentials) {
     const authClient = await auth.getClient();
     const searchconsole = google.searchconsole({ version: 'v1', auth: authClient });
 
-    const sitemapUrl = `${SITE_URL}/sitemap.xml`;
+    const sitemapUrl = `${SITE_URL}/sitemap-index.xml`;
     console.log(`🗺️  Submitting sitemap: ${sitemapUrl}`);
 
     await searchconsole.sitemaps.submit({
