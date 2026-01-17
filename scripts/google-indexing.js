@@ -61,7 +61,7 @@ async function submitUrl(credentials, slug) {
     const authClient = await auth.getClient();
     const indexing = google.indexing({ version: 'v3', auth: authClient });
 
-    const fullUrl = `${SITE_URL}/${slug}`;
+    const fullUrl = `${SITE_URL}/${slug}/`;
     console.log(`🔍 Requesting indexing: ${fullUrl}`);
 
     const response = await indexing.urlNotifications.publish({
